@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class HashIDs : MonoBehaviour {
+public class HashIDs : MonoBehaviour
+{
     public int walkingBool;
 
-    private void Awake() {
+    private void Awake()
+    {
         walkingBool = Animator.StringToHash("Walking");
     }
 }

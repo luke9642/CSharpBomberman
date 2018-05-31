@@ -1,24 +1,27 @@
 using UnityEngine;
 using System.Collections;
 
-public class Bomb : MonoBehaviour {
-    public bool     aboutToDestroy;
-    public int      firePower;
+public class Bomb : MonoBehaviour
+{
+    public bool aboutToDestroy;
+    public int firePower;
 
-    private float   secToBoom;
-    private Player  player;
-    private float   resizer;
+    private float secToBoom;
+    private Player player;
+    private float resizer;
 
-    void Awake() {
-        aboutToDestroy  = false;
-        secToBoom       = 3.0f;
-        resizer         = 0f;
-        firePower       = 0;
+    void Awake()
+    {
+        aboutToDestroy = false;
+        secToBoom = 3.0f;
+        resizer = 0f;
+        firePower = 0;
     }
 
-    void Update() {
-        secToBoom   -= Time.deltaTime;
-        resizer     += Time.deltaTime;
+    void Update()
+    {
+        secToBoom -= Time.deltaTime;
+        resizer += Time.deltaTime;
 
         if (resizer >= 0.5f)
             Resize();
@@ -27,37 +30,53 @@ public class Bomb : MonoBehaviour {
             StartCoroutine(Boom());
     }
 
-    IEnumerator Boom() {
+    IEnumerator Boom()
+    {
         player.ReturnOneBomb();
         aboutToDestroy = true;
         BombChecker();
         yield return new WaitForSeconds(0.1f);
+        print("gaafsfsafsfs");
         Destroy(gameObject);
     }
 
-    void BombChecker() {
+    void BombChecker()
+    {
         float distance = 1.25f + firePower;
         int layer = 1 << 8;
+        ShotRaycast(new Vector3(0, 1, 0), distance, layer);
+        ShotRaycast(new Vector3(0, 0, 0), distance, layer);
+        ShotRaycast(new Vector3(0, -1, 0), distance, layer);
         ShotRaycast(Vector3.forward, distance, layer);
         ShotRaycast(Vector3.back, distance, layer);
         ShotRaycast(Vector3.left, distance, layer);
         ShotRaycast(Vector3.right, distance, layer);
     }
 
-    void ShotRaycast(Vector3 target, float distance, int layer) {
+    void ShotRaycast(Vector3 target, float distance, int layer)
+    {
         RaycastHit hit;
 
-        if (Physics.Raycast(transform.position, target, out hit, distance, layer)) {
-            if (hit.collider != null) {
-                if (hit.collider.tag == Tags.softWall) {
+        if (Physics.Raycast(transform.position, target, out hit, distance))
+        {
+            if (hit.collider != null)
+            {
+                print(hit.collider);
+                if (hit.collider.CompareTag(Tags.player))
+                {
+//                    hit.collider.gameObject.GetComponent<>()
+                }
+
+                if (hit.collider.CompareTag(Tags.softWall))
+                {
                     StartCoroutine(hit.collider.gameObject.GetComponent<SayBeforeDestroy>().Destroyer());
                 }
             }
         }
     }
 
-
-    void Resize() {
+    void Resize()
+    {
         resizer = 0f;
 
         if (transform.localScale.x == 0.7f)
@@ -66,7 +85,8 @@ public class Bomb : MonoBehaviour {
             transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
     }
 
-    public void SetUpOwner(GameObject go, int firePower) {
+    public void SetUpOwner(GameObject go, int firePower)
+    {
         player = go.GetComponent<Player>();
         this.firePower = firePower;
     }
