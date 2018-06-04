@@ -11,6 +11,10 @@ public class GameController : MonoBehaviour
     public GameObject floor;
     public GameObject player;
     public GameObject softWall;
+    [Header("Runtime objects:")]
+    [SerializeField] Transform runtimePlayers;
+    [SerializeField] Transform runtimeSoftWalls;
+    [SerializeField] Transform runtimeHardWalls;
 
     private List<Vector3> softWallPositions;
 
@@ -33,14 +37,14 @@ public class GameController : MonoBehaviour
     {
         for (var i = 0; i < lvlSize; ++i)
         {
-            Instantiate(hardWall, new Vector3(14f + i, 0f, 6f), Quaternion.identity);
-            Instantiate(hardWall, new Vector3(14f + i, 0f, -6f), Quaternion.identity);
+            Instantiate(hardWall, new Vector3(14f + i, 0f, 6f), Quaternion.identity).transform.parent = runtimeHardWalls;
+            Instantiate(hardWall, new Vector3(14f + i, 0f, -6f), Quaternion.identity).transform.parent = runtimeHardWalls;
             Instantiate(floor, new Vector3(14f + i, -0.5f, 0f), Quaternion.identity);
 
             if (i % 2 == 0)
             {
                 for (int z = 4; z > -5; z -= 2)
-                    Instantiate(hardWall, new Vector3(14f + i, 0f, z), Quaternion.identity);
+                    Instantiate(hardWall, new Vector3(14f + i, 0f, z), Quaternion.identity).transform.parent = runtimeHardWalls;
             }
         }
 
@@ -48,7 +52,7 @@ public class GameController : MonoBehaviour
 
         for (int i = 0; i < 13; ++i)
         {
-            Instantiate(hardWall, new Vector3(x, 0f, 6f - i), Quaternion.identity);
+            Instantiate(hardWall, new Vector3(x, 0f, 6f - i), Quaternion.identity).transform.parent = runtimeHardWalls;
         }
     }
 
@@ -56,7 +60,9 @@ public class GameController : MonoBehaviour
     {
         if (playersNumber >= 1)
         {
-            GameObject playerObj = Instantiate(player, new Vector3(1f, 0f, 5f), Quaternion.identity) as GameObject;
+            GameObject playerObj = 
+                Instantiate(player, new Vector3(1f, 0f, 5f), Quaternion.identity) as GameObject;
+            playerObj.transform.parent = runtimePlayers;
             playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
                 bombermanMaterials[0];
             playerObj.GetComponent<Player>().playerNumber = 0;
@@ -65,7 +71,9 @@ public class GameController : MonoBehaviour
 
         if (playersNumber >= 2)
         {
-            GameObject playerObj = Instantiate(player, new Vector3(1f, 0f, -5f), Quaternion.identity) as GameObject;
+            GameObject playerObj = 
+                Instantiate(player, new Vector3(1f, 0f, -5f), Quaternion.identity) as GameObject;
+            playerObj.transform.parent = runtimePlayers;
             playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
                 bombermanMaterials[1];
             playerObj.GetComponent<Player>().playerNumber = 1;
@@ -76,6 +84,7 @@ public class GameController : MonoBehaviour
         {
             GameObject playerObj =
                 Instantiate(player, new Vector3(13f + lvlSize, 0f, 5f), Quaternion.identity) as GameObject;
+            playerObj.transform.parent = runtimePlayers;
             playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
                 bombermanMaterials[2];
             playerObj.GetComponent<Player>().playerNumber = 2;
@@ -86,6 +95,7 @@ public class GameController : MonoBehaviour
         {
             GameObject playerObj =
                 Instantiate(player, new Vector3(13f + lvlSize, 0f, -5f), Quaternion.identity) as GameObject;
+            playerObj.transform.parent = runtimePlayers;
             playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
                 bombermanMaterials[3];
             playerObj.GetComponent<Player>().playerNumber = 3;
@@ -155,7 +165,7 @@ public class GameController : MonoBehaviour
         {
             int tmp = Random.Range(0, softWallPositions.Count);
 
-            Instantiate(softWall, softWallPositions[tmp], Quaternion.identity);
+            Instantiate(softWall, softWallPositions[tmp], Quaternion.identity).transform.parent = runtimeSoftWalls;
 
             softWallPositions.RemoveAt(tmp);
         }

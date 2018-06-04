@@ -4,13 +4,19 @@ using System.Collections;
 public class Player : MonoBehaviour
 {
     public int playerNumber;
-    public float playerSpeed;
 
+    [Header("Stats:")]
+    [SerializeField] public float playerSpeed;
+    [SerializeField] public int playerFirePower;
+    [SerializeField] public int playerBombsLimit;
+
+    [Header("Triggers:")]
     public ColisionTrigger colTriUp;
     public ColisionTrigger colTriDown;
     public ColisionTrigger colTriLeft;
     public ColisionTrigger colTriRight;
 
+    [Header("Assets:")]
     public GameObject bombermanModel;
     public GameObject bombermanTexture;
     public GameObject bomb;
@@ -20,15 +26,15 @@ public class Player : MonoBehaviour
     private bool moving;
     private Vector3 target;
     private int bombsOnMap;
-    private int bombsLimit;
     private Animator animator;
+
 
     void Awake()
     {
         moving = false;
         mainController = GameObject.FindGameObjectWithTag(Tags.mainController).GetComponent<MainController>();
         bombsOnMap = 0;
-        bombsLimit = 1;
+        playerBombsLimit = 1;
         animator = bombermanTexture.GetComponent<Animator>();
         hashIDs = GameObject.FindGameObjectWithTag(Tags.mainController).GetComponent<HashIDs>();
     }
@@ -103,10 +109,10 @@ public class Player : MonoBehaviour
 
     void WaitForBomb()
     {
-        if (!moving && Input.GetKeyDown(mainController.playersKeys[playerNumber].putBomb) && bombsOnMap < bombsLimit)
+        if (!moving && Input.GetKeyDown(mainController.playersKeys[playerNumber].putBomb) && bombsOnMap < playerBombsLimit)
         {
             GameObject bombObj = Instantiate(bomb, transform.position, Quaternion.identity) as GameObject;
-            bombObj.GetComponent<Bomb>().SetUpOwner(gameObject, 1);
+            bombObj.GetComponent<Bomb>().SetUpOwner(gameObject, playerFirePower);
             ++bombsOnMap;
         }
     }

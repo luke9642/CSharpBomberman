@@ -1,11 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class Bomb : MonoBehaviour
 {
+    [SerializeField] GameObject explosion;
     public bool aboutToDestroy;
-    public int firePower;
-
+    private int firePower;
     private float secToBoom;
     private Player player;
     private float resizer;
@@ -15,7 +16,6 @@ public class Bomb : MonoBehaviour
         aboutToDestroy = false;
         secToBoom = 3.0f;
         resizer = 0f;
-        firePower = 0;
     }
 
     void Update()
@@ -30,48 +30,61 @@ public class Bomb : MonoBehaviour
             StartCoroutine(Boom());
     }
 
-    IEnumerator Boom()
+    private IEnumerator Boom()
     {
         player.ReturnOneBomb();
         aboutToDestroy = true;
-        BombChecker();
+        Explode();
         yield return new WaitForSeconds(0.1f);
-        print("gaafsfsafsfs");
         Destroy(gameObject);
     }
 
-    void BombChecker()
+    void Explode()
     {
-        float distance = 1.25f + firePower;
+        float explosionRange = 1f + firePower;
         int layer = 1 << 8;
-        ShotRaycast(new Vector3(0, 1, 0), distance, layer);
-        ShotRaycast(new Vector3(0, 0, 0), distance, layer);
-        ShotRaycast(new Vector3(0, -1, 0), distance, layer);
-        ShotRaycast(Vector3.forward, distance, layer);
-        ShotRaycast(Vector3.back, distance, layer);
-        ShotRaycast(Vector3.left, distance, layer);
-        ShotRaycast(Vector3.right, distance, layer);
+        // What are up and down rays for?
+        //ShotRaycast(new Vector3(0, 1, 0), distance, layer);
+        //ShotRaycast(new Vector3(0, -1, 0), distance, layer);
+        ExplodeInDirection(new Vector3(0, 0, 0), explosionRange, layer);
+        ExplodeInDirection(Vector3.forward, explosionRange, layer);
+        ExplodeInDirection(Vector3.back, explosionRange, layer);
+        ExplodeInDirection(Vector3.left, explosionRange, layer);
+        ExplodeInDirection(Vector3.right, explosionRange, layer);
+        Instantiate(explosion, transform.position, Quaternion.identity);
     }
 
-    void ShotRaycast(Vector3 target, float distance, int layer)
+    void ExplodeInDirection(Vector3 target, float explosionRange, int layer)
     {
         RaycastHit hit;
-
-        if (Physics.Raycast(transform.position, target, out hit, distance))
+        if (Physics.Raycast(transform.position, target, out hit, explosionRange))
         {
-            if (hit.collider != null)
-            {
-                print(hit.collider);
-                if (hit.collider.CompareTag(Tags.player))
-                {
-//                    hit.collider.gameObject.GetComponent<>()
-                }
+            var hitObject = hit.collider.gameObject;
 
-                if (hit.collider.CompareTag(Tags.softWall))
-                {
-                    StartCoroutine(hit.collider.gameObject.GetComponent<SayBeforeDestroy>().Destroyer());
-                }
+            var distanceToHitObject = Vector3.Distance(transform.position, hitObject.transform.position);
+            SpawnExplosionsInDirection(target, distanceToHitObject);
+
+            if (hit.collider.CompareTag(Tags.player))
+            {
+                Destroy(hitObject); //Is coroutine needed?
             }
+
+            if (hit.collider.CompareTag(Tags.softWall))
+            {
+                StartCoroutine(hitObject.GetComponent<SayBeforeDestroy>().Destroyer());
+            }
+        }
+        else
+        {
+            SpawnExplosionsInDirection(target, explosionRange);
+        }
+    }
+
+    private void SpawnExplosionsInDirection(Vector3 target, float distance)
+    {
+        for (int i = 1; i <= (int)Math.Round(distance); i++)
+        {
+            Instantiate(explosion, transform.position + (target * i), Quaternion.identity);
         }
     }
 

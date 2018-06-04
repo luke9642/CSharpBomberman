@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projekt Bomberman", "Assembly-CSharp.csproj", "{AEDBEBA4-4B0D-98AD-1730-9CF291C58414}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projekt Bomberman", "Assembly-CSharp-Editor-firstpass.csproj", "{7003D1F5-9084-B1E3-244F-783B7A8196BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEDBEBA4-4B0D-98AD-1730-9CF291C58414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEDBEBA4-4B0D-98AD-1730-9CF291C58414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEDBEBA4-4B0D-98AD-1730-9CF291C58414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEDBEBA4-4B0D-98AD-1730-9CF291C58414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7003D1F5-9084-B1E3-244F-783B7A8196BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7003D1F5-9084-B1E3-244F-783B7A8196BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7003D1F5-9084-B1E3-244F-783B7A8196BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7003D1F5-9084-B1E3-244F-783B7A8196BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
