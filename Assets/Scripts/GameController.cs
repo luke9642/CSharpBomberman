@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -15,20 +17,21 @@ public class GameController : MonoBehaviour
     [SerializeField] Transform runtimePlayers;
     [SerializeField] Transform runtimeSoftWalls;
     [SerializeField] Transform runtimeHardWalls;
-
     private List<Vector3> softWallPositions;
+    private List<Player> alivePlayers;
 
     private void Awake()
     {
-//        lvlSize             = ;
+//      lvlSize = ;
         playersNumber = 4;
         softWallPositions = new List<Vector3>();
+        alivePlayers = new List<Player>();
     }
 
     void Start()
     {
         CreateLvl();
-        SpanPlayers();
+        SpawnPlayers();
         FillSoftWallsList();
         PutSoftWalls();
     }
@@ -56,50 +59,70 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void SpanPlayers()
+    void SpawnPlayers()
     {
         if (playersNumber >= 1)
         {
-            GameObject playerObj = 
+            GameObject playerObj =
                 Instantiate(player, new Vector3(1f, 0f, 5f), Quaternion.identity) as GameObject;
-            playerObj.transform.parent = runtimePlayers;
-            playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
-                bombermanMaterials[0];
-            playerObj.GetComponent<Player>().playerNumber = 0;
+            InitializePlayer(playerObj, 0);
         }
-
 
         if (playersNumber >= 2)
         {
             GameObject playerObj = 
                 Instantiate(player, new Vector3(1f, 0f, -5f), Quaternion.identity) as GameObject;
-            playerObj.transform.parent = runtimePlayers;
-            playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
-                bombermanMaterials[1];
-            playerObj.GetComponent<Player>().playerNumber = 1;
+            InitializePlayer(playerObj, 1);
         }
-
 
         if (playersNumber >= 3)
         {
             GameObject playerObj =
                 Instantiate(player, new Vector3(13f + lvlSize, 0f, 5f), Quaternion.identity) as GameObject;
-            playerObj.transform.parent = runtimePlayers;
-            playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
-                bombermanMaterials[2];
-            playerObj.GetComponent<Player>().playerNumber = 2;
+            InitializePlayer(playerObj, 2);
         }
-
 
         if (playersNumber >= 4)
         {
             GameObject playerObj =
                 Instantiate(player, new Vector3(13f + lvlSize, 0f, -5f), Quaternion.identity) as GameObject;
-            playerObj.transform.parent = runtimePlayers;
-            playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
-                bombermanMaterials[3];
-            playerObj.GetComponent<Player>().playerNumber = 3;
+            InitializePlayer(playerObj, 3);
         }
+    }
+
+    private void InitializePlayer(GameObject playerObj, int playerIndex)
+    {
+        playerObj.transform.parent = runtimePlayers;
+        playerObj.GetComponent<Player>().bombermanModel.GetComponent<SkinnedMeshRenderer>().material =
+            bombermanMaterials[playerIndex];
+
+        Player player = playerObj.GetComponent<Player>();
+        player.playerNumber = playerIndex;
+        player.PlayerDied += OnPlayerDeath;
+        alivePlayers.Add(player);
+    }
+
+    private void OnPlayerDeath(object sender, System.EventArgs e)
+    {
+        var player = sender as Player;
+        print("Player " + (player.playerNumber+1) + " died.");
+        alivePlayers.Remove(player);
+        CheckForWinner();
+    }
+
+    private void CheckForWinner()
+    {
+        if (alivePlayers.Count() == 1)
+        {
+            print("Player " + (alivePlayers.Single().playerNumber+1) + " won!");
+            StartCoroutine(LoadLevel(0, 5f));
+        }
+    }
+
+    IEnumerator LoadLevel(int index, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SceneManager.LoadScene(index);
     }
 
     void FillSoftWallsList()

@@ -9,8 +9,6 @@ public class BasePowerUp : MonoBehaviour
 	float rotationSpeed = 99.0f;
     #endregion
 
-    protected virtual void ApplyPowerUp(Player player) { }
-
     private void OnTriggerEnter(Collider other)
     {
         if(other.CompareTag(Tags.player))
@@ -19,6 +17,8 @@ public class BasePowerUp : MonoBehaviour
             ApplyPowerUp(other.gameObject.GetComponent<Player>());
         }
     }
+
+    protected virtual void ApplyPowerUp(Player player) { }
 
     void Update ()
 	{

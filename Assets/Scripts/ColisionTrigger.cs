@@ -8,6 +8,7 @@ public class ColisionTrigger : MonoBehaviour
     public bool playerTouch;
     public bool softWallTouch;
     public bool bombTouch;
+    public Bomb bombInside;
 
     void Awake()
     {
@@ -15,6 +16,11 @@ public class ColisionTrigger : MonoBehaviour
         playerTouch = false;
         softWallTouch = false;
         bombTouch = false;
+    }
+
+    public bool TouchesSomething()
+    {
+        return bombTouch || softWallTouch || playerTouch || hardWallTouch;
     }
 
     void OnTriggerStay(Collider other)
@@ -36,9 +42,12 @@ public class ColisionTrigger : MonoBehaviour
         if (other.CompareTag(Tags.bomb))
         {
             bombTouch = true;
-
-            if (other.gameObject.GetComponent<Bomb>().aboutToDestroy)
+            bombInside = other.gameObject.GetComponent<Bomb>();
+            if (bombInside.aboutToDestroy)
+            {
                 bombTouch = false;
+                bombInside = null;
+            }
         }
     }
 
@@ -54,6 +63,9 @@ public class ColisionTrigger : MonoBehaviour
             softWallTouch = false;
 
         if (other.CompareTag(Tags.bomb))
+        {
             bombTouch = false;
+            bombInside = null;
+        }
     }
 }
