@@ -26,6 +26,7 @@ public class Player : MonoBehaviour
     private MainController mainController;
     private HashIDs hashIDs;
     private bool moving;
+    private bool dying;
     private Vector3 target;
     private int bombsOnMap;
     private Animator animator;
@@ -34,6 +35,7 @@ public class Player : MonoBehaviour
     void Awake()
     {
         moving = false;
+        dying = false;
         mainController = GameObject.FindGameObjectWithTag(Tags.mainController).GetComponent<MainController>();
         bombsOnMap = 0;
         playerBombsLimit = 1;
@@ -43,7 +45,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (!moving)
+        if (!moving && !dying)
             WaitForMove();
         else
             Moving();
@@ -78,7 +80,6 @@ public class Player : MonoBehaviour
             TryPushingBomb(colTriRight);
             TryMovingPlayer(colTriRight);
         }
-
     }
 
     private void TryPushingBomb(ColisionTrigger trigger)
@@ -131,8 +132,10 @@ public class Player : MonoBehaviour
 
     public void Destroyer()
     {
+        dying = true;
+        animator.SetBool(hashIDs.dyingBool, true);
         OnPlayerDeath(new EventArgs());
-        Destroy(gameObject);
+        Destroy(gameObject, 1.75f);
     }
 
     protected virtual void OnPlayerDeath(EventArgs e)
