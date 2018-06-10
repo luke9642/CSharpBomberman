@@ -1,16 +1,24 @@
 using UnityEngine;
 using System.Collections;
+using System;
+using System.Collections.Generic;
 
 public class Player : MonoBehaviour
 {
     public int playerNumber;
-    public float playerSpeed;
 
+    [Header("Stats:")]
+    [SerializeField] public float playerSpeed;
+    [SerializeField] public int playerFirePower;
+    [SerializeField] public int playerBombsLimit;
+
+    [Header("Triggers:")]
     public ColisionTrigger colTriUp;
     public ColisionTrigger colTriDown;
     public ColisionTrigger colTriLeft;
     public ColisionTrigger colTriRight;
 
+    [Header("Assets:")]
     public GameObject bombermanModel;
     public GameObject bombermanTexture;
     public GameObject bomb;
@@ -20,15 +28,15 @@ public class Player : MonoBehaviour
     private bool moving;
     private Vector3 target;
     private int bombsOnMap;
-    private int bombsLimit;
     private Animator animator;
+    public event EventHandler PlayerDied;
 
     void Awake()
     {
         moving = false;
         mainController = GameObject.FindGameObjectWithTag(Tags.mainController).GetComponent<MainController>();
         bombsOnMap = 0;
-        bombsLimit = 1;
+        playerBombsLimit = 1;
         animator = bombermanTexture.GetComponent<Animator>();
         hashIDs = GameObject.FindGameObjectWithTag(Tags.mainController).GetComponent<HashIDs>();
     }
@@ -39,45 +47,54 @@ public class Player : MonoBehaviour
             WaitForMove();
         else
             Moving();
-
         WaitForBomb();
     }
-
     void WaitForMove()
     {
-        if (!colTriUp.bombTouch && !colTriUp.softWallTouch && !colTriUp.playerTouch && !colTriUp.hardWallTouch &&
-            Input.GetKey(mainController.playersKeys[playerNumber].up))
+        if (Input.GetKey(mainController.playersKeys[playerNumber].up))
         {
-            moving = true;
-            target = new Vector3(transform.position.x, transform.position.y, transform.position.z + 1f);
             bombermanTexture.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-            animator.SetBool(hashIDs.walkingBool, true);
+            TryPushingBomb(colTriUp);
+            TryMovingPlayer(colTriUp);
         }
 
-        if (!colTriDown.bombTouch && !colTriDown.softWallTouch && !colTriDown.playerTouch &&
-            !colTriDown.hardWallTouch && Input.GetKey(mainController.playersKeys[playerNumber].down))
+        if (Input.GetKey(mainController.playersKeys[playerNumber].down))
         {
-            moving = true;
-            target = new Vector3(transform.position.x, transform.position.y, transform.position.z - 1f);
             bombermanTexture.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            animator.SetBool(hashIDs.walkingBool, true);
+            TryPushingBomb(colTriDown);
+            TryMovingPlayer(colTriDown);
         }
 
-        if (!colTriLeft.bombTouch && !colTriLeft.softWallTouch && !colTriLeft.playerTouch &&
-            !colTriLeft.hardWallTouch && Input.GetKey(mainController.playersKeys[playerNumber].left))
+        if (Input.GetKey(mainController.playersKeys[playerNumber].left))
         {
-            moving = true;
-            target = new Vector3(transform.position.x - 1f, transform.position.y, transform.position.z);
             bombermanTexture.transform.localRotation = Quaternion.Euler(0f, 270f, 0f);
-            animator.SetBool(hashIDs.walkingBool, true);
+            TryPushingBomb(colTriLeft);
+            TryMovingPlayer(colTriLeft);
         }
 
-        if (!colTriRight.bombTouch && !colTriRight.softWallTouch && !colTriRight.playerTouch &&
-            !colTriRight.hardWallTouch && Input.GetKey(mainController.playersKeys[playerNumber].right))
+        if (Input.GetKey(mainController.playersKeys[playerNumber].right))
+        {
+            bombermanTexture.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            TryPushingBomb(colTriRight);
+            TryMovingPlayer(colTriRight);
+        }
+
+    }
+
+    private void TryPushingBomb(ColisionTrigger trigger)
+    {
+        if (trigger.bombInside != null)
+        {
+            trigger.bombInside.TryPushing(trigger.transform.localPosition);
+        }
+    }
+
+    private void TryMovingPlayer(ColisionTrigger trigger)
+    {
+        if (!trigger.TouchesSomething())
         {
             moving = true;
-            target = new Vector3(transform.position.x + 1f, transform.position.y, transform.position.z);
-            bombermanTexture.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            target = transform.position + trigger.transform.localPosition;
             animator.SetBool(hashIDs.walkingBool, true);
         }
     }
@@ -103,12 +120,25 @@ public class Player : MonoBehaviour
 
     void WaitForBomb()
     {
-        if (!moving && Input.GetKeyDown(mainController.playersKeys[playerNumber].putBomb) && bombsOnMap < bombsLimit)
+        if (moving) return;
+        if (Input.GetKeyDown(mainController.playersKeys[playerNumber].putBomb) && bombsOnMap < playerBombsLimit)
         {
             GameObject bombObj = Instantiate(bomb, transform.position, Quaternion.identity) as GameObject;
-            bombObj.GetComponent<Bomb>().SetUpOwner(gameObject, 1);
+            bombObj.GetComponent<Bomb>().SetUpOwner(gameObject, playerFirePower);
             ++bombsOnMap;
         }
+    }
+
+    public void Destroyer()
+    {
+        OnPlayerDeath(new EventArgs());
+        Destroy(gameObject);
+    }
+
+    protected virtual void OnPlayerDeath(EventArgs e)
+    {
+        if (PlayerDied != null)
+            PlayerDied(this, e);
     }
 
     public void ReturnOneBomb()

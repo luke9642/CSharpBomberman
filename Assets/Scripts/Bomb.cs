@@ -1,77 +1,135 @@
 using UnityEngine;
 using System.Collections;
+using System;
+using System.Collections.Generic;
 
 public class Bomb : MonoBehaviour
 {
     public bool aboutToDestroy;
-    public int firePower;
+    [SerializeField] float pushSpeed = 1.5f;
+    [SerializeField] GameObject explosion;
 
-    private float secToBoom;
+    [Header("Triggers:")]
+    public ColisionTrigger colTriUp;
+    public ColisionTrigger colTriDown;
+    public ColisionTrigger colTriLeft;
+    public ColisionTrigger colTriRight;
+
     private Player player;
+    private int firePower;
+    private float secToBoom;
     private float resizer;
+    private bool isMoving;
+    private Vector3 target;
+    private Dictionary<Vector3Int, ColisionTrigger> fromDirectionToTrigger;
+
+    public void SetUpOwner(GameObject go, int firePower)
+    {
+        player = go.GetComponent<Player>();
+        this.firePower = firePower;
+    }
+
+    public void TryPushing(Vector3 direction)
+    {
+        var trigger = fromDirectionToTrigger[Vector3Int.RoundToInt(direction)];
+        if (!trigger.TouchesSomething() && !aboutToDestroy && !isMoving)
+        {
+            target = transform.position + direction;
+            isMoving = true;
+        }
+    }
 
     void Awake()
     {
         aboutToDestroy = false;
         secToBoom = 3.0f;
         resizer = 0f;
-        firePower = 0;
+        fromDirectionToTrigger = new Dictionary<Vector3Int, ColisionTrigger>()
+        {
+            { new Vector3Int(0,0,1) , colTriUp },
+            { new Vector3Int(0,0,-1) , colTriDown },
+            { Vector3Int.left , colTriLeft },
+            { Vector3Int.right , colTriRight }
+        };
     }
 
     void Update()
     {
+        if(isMoving)
+        {
+            Move();
+        }
         secToBoom -= Time.deltaTime;
         resizer += Time.deltaTime;
 
         if (resizer >= 0.5f)
             Resize();
-
-        if (secToBoom <= 0f && !aboutToDestroy)
+        if (secToBoom <= 0f && !aboutToDestroy && !isMoving)
             StartCoroutine(Boom());
     }
 
-    IEnumerator Boom()
+    void Move()
+    {
+        transform.position = Vector3.MoveTowards(transform.position, target, pushSpeed * Time.deltaTime);
+        if (transform.position == target)
+        {
+            isMoving = false;
+        }
+    }
+
+    private IEnumerator Boom()
     {
         player.ReturnOneBomb();
         aboutToDestroy = true;
-        BombChecker();
+        Explode();
         yield return new WaitForSeconds(0.1f);
-        print("gaafsfsafsfs");
         Destroy(gameObject);
     }
 
-    void BombChecker()
+    void Explode()
     {
-        float distance = 1.25f + firePower;
-        int layer = 1 << 8;
-        ShotRaycast(new Vector3(0, 1, 0), distance, layer);
-        ShotRaycast(new Vector3(0, 0, 0), distance, layer);
-        ShotRaycast(new Vector3(0, -1, 0), distance, layer);
-        ShotRaycast(Vector3.forward, distance, layer);
-        ShotRaycast(Vector3.back, distance, layer);
-        ShotRaycast(Vector3.left, distance, layer);
-        ShotRaycast(Vector3.right, distance, layer);
+        float explosionRange = 1f + firePower;
+        int layer = (1 << 8) + (1 << 9); //Wall and explodable layers
+        var origin = transform.position;
+        ExplodeInDirection(origin + Vector3.up, Vector3.down, explosionRange, layer); //Explode from above to hit player inside the bomb
+        ExplodeInDirection(origin, Vector3.forward, explosionRange, layer);
+        ExplodeInDirection(origin, Vector3.back, explosionRange, layer);
+        ExplodeInDirection(origin, Vector3.left, explosionRange, layer);
+        ExplodeInDirection(origin, Vector3.right, explosionRange, layer);
+        Instantiate(explosion, origin, Quaternion.identity);
     }
 
-    void ShotRaycast(Vector3 target, float distance, int layer)
+    void ExplodeInDirection(Vector3 origin, Vector3 target, float explosionRange, int layer)
     {
         RaycastHit hit;
-
-        if (Physics.Raycast(transform.position, target, out hit, distance))
+        if (Physics.Raycast(origin, target, out hit, explosionRange, layer))
         {
-            if (hit.collider != null)
-            {
-                print(hit.collider);
-                if (hit.collider.CompareTag(Tags.player))
-                {
-//                    hit.collider.gameObject.GetComponent<>()
-                }
+            var hitObject = hit.collider.gameObject;
 
-                if (hit.collider.CompareTag(Tags.softWall))
-                {
-                    StartCoroutine(hit.collider.gameObject.GetComponent<SayBeforeDestroy>().Destroyer());
-                }
+            var distanceToHitObject = Vector3.Distance(origin, hitObject.transform.position);
+            SpawnExplosionsInDirection(target, distanceToHitObject);
+
+            if (hit.collider.CompareTag(Tags.player))
+            {
+                hitObject.GetComponent<Player>().Destroyer();
             }
+
+            if (hit.collider.CompareTag(Tags.softWall))
+            {
+                StartCoroutine(hitObject.GetComponent<SayBeforeDestroy>().Destroyer());
+            }
+        }
+        else
+        {
+            SpawnExplosionsInDirection(target, explosionRange);
+        }
+    }
+
+    private void SpawnExplosionsInDirection(Vector3 target, float distance)
+    {
+        for (int i = 1; i <= (int)Math.Round(distance); i++)
+        {
+            Instantiate(explosion, transform.position + (target * i), Quaternion.identity);
         }
     }
 
@@ -83,11 +141,5 @@ public class Bomb : MonoBehaviour
             transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
         else
             transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-    }
-
-    public void SetUpOwner(GameObject go, int firePower)
-    {
-        player = go.GetComponent<Player>();
-        this.firePower = firePower;
     }
 }
