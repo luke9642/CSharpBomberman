@@ -25,8 +25,6 @@ public class GameController : MonoBehaviour
 
     private void Awake()
     {
-//      lvlSize = ;
-        playersNumber = 4;
         softWallPositions = new List<Vector3>();
         alivePlayers = new List<Player>();
         gameOverPanel.SetActive(false);
@@ -116,14 +114,13 @@ public class GameController : MonoBehaviour
 
     private void CheckForWinner()
     {
-        if (alivePlayers.Count() == 1)
+        if (alivePlayers.Count == 1)
         {
-            print("Player " + (alivePlayers.Single().playerNumber+1) + " won!");
             StartCoroutine(LoadLevel(0, 5f));
             var playerNo = alivePlayers.Single().playerNumber + 1;
-            var info = "Koniec! Wygra³ gracz: " + playerNo;
-            gameOverPanel.SetActive(true);
+            var info = "Game over! Player " + playerNo + " wins!";
             gameOverText.text = info;
+            gameOverPanel.SetActive(true);
         }
     }
 
