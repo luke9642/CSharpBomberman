@@ -5,7 +5,7 @@ using System.Collections;
 public class SayBeforeDestroy : MonoBehaviour
 {
     public bool aboutToDestroy;
-    [SerializeField] [Range(0,1)] float powerUpDropChance = 0.3f;
+    [SerializeField] [Range(0, 1)] float powerUpDropChance = 0.3f;
     [SerializeField] GameObject[] powerUps;
 
     void Awake()
@@ -24,10 +24,7 @@ public class SayBeforeDestroy : MonoBehaviour
 
     private void TryDroppingPickup()
     {
-        bool dropPowerUp = (powerUpDropChance >= Random.Range(0, 1f));
-        if(dropPowerUp)
-        {
+        if(powerUpDropChance >= Random.Range(0, 1f))
             Instantiate(powerUps[Random.Range(0, powerUps.Length)], transform.position, Quaternion.identity);
-        }
     }
 }

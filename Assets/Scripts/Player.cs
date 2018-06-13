@@ -1,7 +1,6 @@
-using UnityEngine;
-using System.Collections;
 using System;
-using System.Collections.Generic;
+using System.Collections;
+using UnityEngine;
 
 public class Player : MonoBehaviour
 {
@@ -85,9 +84,7 @@ public class Player : MonoBehaviour
     private void TryPushingBomb(ColisionTrigger trigger)
     {
         if (trigger.bombInside != null)
-        {
             trigger.bombInside.TryPushing(trigger.transform.localPosition);
-        }
     }
 
     private void TryMovingPlayer(ColisionTrigger trigger)
@@ -96,7 +93,7 @@ public class Player : MonoBehaviour
         {
             moving = true;
             target = transform.position + trigger.transform.localPosition;
-            animator.SetBool(hashIDs.walkingBool, true);
+            animator.SetBool(hashIDs.WalkingBool, true);
         }
     }
 
@@ -116,15 +113,17 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
 
         if (!moving)
-            animator.SetBool(hashIDs.walkingBool, false);
+            animator.SetBool(hashIDs.WalkingBool, false);
     }
 
     void WaitForBomb()
     {
-        if (moving) return;
+        if (moving)
+            return;
+        
         if (Input.GetKeyDown(mainController.playersKeys[playerNumber].putBomb) && bombsOnMap < playerBombsLimit)
         {
-            GameObject bombObj = Instantiate(bomb, transform.position, Quaternion.identity) as GameObject;
+            var bombObj = Instantiate(bomb, transform.position, Quaternion.identity);
             bombObj.GetComponent<Bomb>().SetUpOwner(gameObject, playerFirePower);
             ++bombsOnMap;
         }
@@ -133,7 +132,7 @@ public class Player : MonoBehaviour
     public void Destroyer()
     {
         dying = true;
-        animator.SetBool(hashIDs.dyingBool, true);
+        animator.SetBool(hashIDs.DyingBool, true);
         OnPlayerDeath(new EventArgs());
         Destroy(gameObject, 1.75f);
     }

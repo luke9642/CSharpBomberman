@@ -44,21 +44,20 @@ public class Bomb : MonoBehaviour
         aboutToDestroy = false;
         secToBoom = 3.0f;
         resizer = 0f;
-        fromDirectionToTrigger = new Dictionary<Vector3Int, ColisionTrigger>()
+        fromDirectionToTrigger = new Dictionary<Vector3Int, ColisionTrigger>
         {
-            { new Vector3Int(0,0,1) , colTriUp },
-            { new Vector3Int(0,0,-1) , colTriDown },
-            { Vector3Int.left , colTriLeft },
-            { Vector3Int.right , colTriRight }
+            { new Vector3Int(0, 0, 1), colTriUp },
+            { new Vector3Int(0, 0, -1), colTriDown },
+            { Vector3Int.left, colTriLeft },
+            { Vector3Int.right, colTriRight }
         };
     }
 
     void Update()
     {
         if(isMoving)
-        {
             Move();
-        }
+        
         secToBoom -= Time.deltaTime;
         resizer += Time.deltaTime;
 
@@ -72,9 +71,7 @@ public class Bomb : MonoBehaviour
     {
         transform.position = Vector3.MoveTowards(transform.position, target, pushSpeed * Time.deltaTime);
         if (transform.position == target)
-        {
             isMoving = false;
-        }
     }
 
     private IEnumerator Boom()
@@ -88,8 +85,8 @@ public class Bomb : MonoBehaviour
 
     void Explode()
     {
-        float explosionRange = 1f + firePower;
-        int layer = (1 << 8) + (1 << 9); //Wall and explodable layers
+        var explosionRange = 1f + firePower;
+        const int layer = (1 << 8) + (1 << 9); //Wall and explodable layers
         var origin = transform.position;
         ExplodeInDirection(origin + Vector3.up, Vector3.down, explosionRange, layer); //Explode from above to hit player inside the bomb
         ExplodeInDirection(origin, Vector3.forward, explosionRange, layer);
@@ -110,14 +107,10 @@ public class Bomb : MonoBehaviour
             SpawnExplosionsInDirection(target, distanceToHitObject);
 
             if (hit.collider.CompareTag(Tags.player))
-            {
                 hitObject.GetComponent<Player>().Destroyer();
-            }
 
             if (hit.collider.CompareTag(Tags.softWall))
-            {
                 StartCoroutine(hitObject.GetComponent<SayBeforeDestroy>().Destroyer());
-            }
         }
         else
         {
@@ -127,10 +120,8 @@ public class Bomb : MonoBehaviour
 
     private void SpawnExplosionsInDirection(Vector3 target, float distance)
     {
-        for (int i = 1; i <= (int)Math.Round(distance); i++)
-        {
-            Instantiate(explosion, transform.position + (target * i), Quaternion.identity);
-        }
+        for (var i = 1; i <= (int)Math.Round(distance); i++)
+            Instantiate(explosion, transform.position + target * i, Quaternion.identity);
     }
 
     void Resize()

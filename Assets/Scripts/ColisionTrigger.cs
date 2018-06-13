@@ -1,6 +1,7 @@
-using System;
 using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 public class ColisionTrigger : MonoBehaviour
 {
@@ -50,7 +51,7 @@ public class ColisionTrigger : MonoBehaviour
             }
         }
     }
-
+    
     void OnTriggerExit(Collider other)
     {
         if (other.CompareTag(Tags.hardWall))

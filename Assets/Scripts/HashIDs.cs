@@ -3,12 +3,12 @@ using System.Collections;
 
 public class HashIDs : MonoBehaviour
 {
-    public int walkingBool;
-    public int dyingBool;
+    public int WalkingBool;
+    public int DyingBool;
 
     private void Awake()
     {
-        walkingBool = Animator.StringToHash("Walking");
-        dyingBool = Animator.StringToHash("Dying");
+        WalkingBool = Animator.StringToHash("Walking");
+        DyingBool = Animator.StringToHash("Dying");
     }
 }

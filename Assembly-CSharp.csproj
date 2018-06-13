@@ -44,6 +44,9 @@
     <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExCSS.Unity, Version=2.0.6.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\ExCSS.Unity.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>D:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
